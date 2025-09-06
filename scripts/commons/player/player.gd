@@ -40,21 +40,15 @@ var var_jump_timer := 0.0 # 可变跳定时器
 var coyote_timer := 0.0 # Coyote Time
 var buffer_timer := 0.0 # 提前按跳缓冲
 # 攀爬相关
+var is_walling := false # 是否正在墙上
 var stamina := CLIMB_MAX_STAMINA # 当前体力
 var on_wall := false # 是否在贴墙
 var wall_dir := 0 # 贴哪一边的墙：-1：左墙，1：右墙
-var can_wall := false # 是否可以攀爬
 
 func _physics_process(delta: float) -> void:
 	# 更新变量
 	move_input = Input.get_action_strength("right") - Input.get_action_strength("left")
 	on_ground = is_on_floor()
-
-	# 更新是否攀爬
-	if on_wall and stamina > 0 and Input.is_action_pressed("grab"):
-		can_wall = true
-	elif not stamina > 0 or on_wall == false or Input.is_action_just_released("grab"):
-		can_wall = false
 
 	# 更新 Coyote Time
 	if on_ground:
@@ -81,10 +75,17 @@ func _physics_process(delta: float) -> void:
 
 # 方向反转
 func direction_reversal() -> void:
-	if move_input == 1.0:
-		animation.flip_h = false
-	elif move_input == -1.0:
-		animation.flip_h = true
+	if is_walling == true:
+		if wall_dir == -1:
+			animation.flip_h = false
+		elif wall_dir == 1:
+			animation.flip_h = true
+	else:
+		if move_input == 1.0:
+			animation.flip_h = false
+		elif move_input == -1.0:
+			animation.flip_h = true
+	
 
 # 重力
 func apply_gravity(delta: float) -> void:

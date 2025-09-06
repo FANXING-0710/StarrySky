@@ -2,7 +2,6 @@ extends State
 
 func Begin() -> void:
     print("进入 Jump 状态")
-    # _owner.stop()   # 调用 Player.gd 的函数
 
 func Update(delta: float) -> void:
     _owner.handle_jump_input(delta) # 跳跃
@@ -13,7 +12,7 @@ func Update(delta: float) -> void:
         change_state("Fall")
 
     # 进入 wall
-    if _owner.can_wall == true:
+    if _owner.on_wall == true and Input.is_action_pressed("grab"):
         change_state("Wall")
 
 func End() -> void:

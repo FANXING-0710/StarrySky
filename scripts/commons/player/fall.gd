@@ -11,8 +11,8 @@ func Update(delta: float) -> void:
 	if _owner.on_ground:
 		change_state("Idle")
 
-	# 进入 wall
-	if _owner.can_wall == true:
+    # 进入 wall
+	if _owner.on_wall == true and Input.is_action_pressed("grab"):
 		change_state("Wall")
 
 func End() -> void:

@@ -24,7 +24,7 @@ func Update(delta: float) -> void:
         change_state("Jump")
 
     # 进入 wall
-    if _owner.can_wall == true:
+    if _owner.on_wall == true and Input.is_action_pressed("grab"):
         change_state("Wall")
         
 func End() -> void:
