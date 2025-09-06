@@ -7,11 +7,17 @@ func Begin() -> void:
 func Update(delta: float) -> void:
     _owner.animation.play("run")
 
+    # 进入 idle
     if _owner.velocity.x == 0 and _owner.move_input == 0:
         change_state("Idle")
 
-    if _owner.velocity.y != 0 and not _owner.is_jumping:
+    # 进入 fall
+    if _owner.velocity.y > 0:
         change_state("Fall")
+
+    # 进入 wall
+    if _owner.can_wall == true:
+        change_state("Wall")
 
     if _owner.is_jumping:
         change_state("Jump")

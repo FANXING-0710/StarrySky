@@ -3,10 +3,10 @@ extends State
 func Begin() -> void:
     _owner.stamina = _owner.CLIMB_MAX_STAMINA
     print("进入 Idle 状态")
-    # _owner.stop()   # 调用 Player.gd 的函数
 
 func Update(delta: float) -> void:
     _owner.animation.play("idle")
+
     # 进入 fall
     if _owner.velocity.y != 0 and not _owner.is_jumping:
         change_state("Fall")
@@ -24,7 +24,7 @@ func Update(delta: float) -> void:
         change_state("Jump")
 
     # 进入 wall
-    if _owner.on_wall and Input.is_action_pressed("grab"):
+    if _owner.can_wall == true:
         change_state("Wall")
         
 func End() -> void:

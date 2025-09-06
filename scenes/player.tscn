@@ -1,4 +1,4 @@
-[gd_scene load_steps=51 format=3 uid="uid://cfuv3llg7nup2"]
+[gd_scene load_steps=49 format=3 uid="uid://cfuv3llg7nup2"]
 
 [ext_resource type="Texture2D" uid="uid://s0ag6k6gx0i3" path="res://assets/sprites/player/idle.png" id="1_3vyb7"]
 [ext_resource type="Script" uid="uid://duwojnaefoqdy" path="res://scripts/commons/player/player.gd" id="1_dqkch"]
@@ -14,9 +14,7 @@
 [ext_resource type="Script" uid="uid://dlgtgflwmbqxl" path="res://scripts/commons/player/crouch.gd" id="10_y4r1p"]
 [ext_resource type="Script" uid="uid://eg0p3bjtr3to" path="res://scripts/commons/player/jump.gd" id="12_jej6c"]
 [ext_resource type="Script" uid="uid://d3je38xefw0lv" path="res://scripts/commons/player/wall.gd" id="13_oprun"]
-[ext_resource type="Script" uid="uid://cetdbkyjfyolq" path="res://scripts/commons/player/climb.gd" id="14_a8ls1"]
-[ext_resource type="Script" uid="uid://sch320rc35tu" path="res://scripts/commons/player/slip.gd" id="15_qfm1y"]
-[ext_resource type="Script" uid="uid://cw35o883jkglb" path="res://scripts/commons/player/wall_jump.gd" id="17_qfm1y"]
+[ext_resource type="Script" uid="uid://jl888rdt4v5t" path="res://scripts/commons/player/climb.gd" id="14_a8ls1"]
 
 [sub_resource type="AtlasTexture" id="AtlasTexture_ke2ow"]
 atlas = ExtResource("2_ur7pv")
@@ -306,9 +304,3 @@ script = ExtResource("13_oprun")
 
 [node name="Climb" type="Node" parent="StateMachine"]
 script = ExtResource("14_a8ls1")
-
-[node name="Slip" type="Node" parent="StateMachine"]
-script = ExtResource("15_qfm1y")
-
-[node name="WallJump" type="Node" parent="StateMachine"]
-script = ExtResource("17_qfm1y")
