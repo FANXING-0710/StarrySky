@@ -10,13 +10,19 @@ func Update(delta: float) -> void:
 	_owner.velocity.y = move_toward(_owner.velocity.y, -_owner.CLIMB_UP_SPEED, _owner.CLIMB_ACCEL * delta)
 		
 	# 进入 fall
-	if _owner.on_wall == false or Input.is_action_just_released("grab"):
+	if _owner.on_wall == false:
 		change_state("Fall")
 
-	# 进入 wall
+	# 进入 wall 或 slip
 	if Input.is_action_just_released("up"):
 		change_state("Wall")
 	elif not Input.is_action_pressed("up") and Input.is_action_just_pressed("down"):
+		change_state("Slip")
+
+	# 进入 fall 或 slip
+	if _owner.move_input == 0 and Input.is_action_just_released("grab"):
+		change_state("Fall")
+	elif _owner.move_input != 0 and Input.is_action_just_released("grab"):
 		change_state("Slip")
 
 	# 进入 slip
