@@ -12,7 +12,7 @@ func Update(delta: float) -> void:
 		change_state("Idle")
 
 	# 进入 wall
-	if _owner.on_wall == true and Input.is_action_pressed("grab"):
+	if _owner.can_on_wall:
 		change_state("Wall")
 
 	# 进入 slip

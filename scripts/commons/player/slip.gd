@@ -1,23 +1,34 @@
 extends State
 
 func Begin() -> void:
-    _owner.can_apply_gravity = false
-    _owner.is_walling = true
-    print("进入 Slip 状态")
+	_owner.is_walling = true
+	print("进入 Slip 状态")
 
 func Update(delta: float) -> void:
 	# _owner.animation.play("slip")
-    _owner.animation.play("wall")
+	_owner.animation.play("wall")
 
-    _owner.velocity.y = move_toward(_owner.velocity.y, _owner.CLIMB_DOWN_SPEED, _owner.CLIMB_ACCEL * delta)
+	_owner.velocity.y = move_toward(_owner.velocity.y, _owner.CLIMB_DOWN_SPEED, _owner.CLIMB_ACCEL * delta)
 		
 	# 进入 fall
-    if _owner.on_wall == false or Input.is_action_just_released("grab"):
-        change_state("Fall")
-    if _owner.on_wall == true and not Input.is_action_pressed("grab") and _owner.move_input == 0.0:
-        change_state("Fall")
-    
+	if _owner.on_wall == false:
+		change_state("Fall")
+	if Input.is_action_just_released("grab"):
+		change_state("Fall")
+
+	if Input.is_action_just_released("left") or Input.is_action_just_released("right"):
+		change_state("Fall")
+	
+	if Input.is_action_just_pressed("grab"):
+		change_state("Wall")
+	if Input.is_action_just_released("down"):
+		change_state("Wall")
+	
+	if not Input.is_action_pressed("grab") and _owner.on_ground and _owner.move_input != 0.0:
+		change_state("Run")
+	elif not Input.is_action_pressed("grab") and _owner.on_ground and _owner.move_input == 0.0:
+		change_state("Idle")
+	
 func End() -> void:
-    _owner.can_apply_gravity = true
-    _owner.is_walling = false
-    print("退出 Slip")
+	_owner.is_walling = false
+	print("退出 Slip")
