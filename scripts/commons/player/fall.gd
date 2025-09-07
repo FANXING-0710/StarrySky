@@ -5,8 +5,6 @@ func Begin() -> void:
 	print("进入 Fall 状态")
 
 func Update(delta: float) -> void:
-	_owner.animation.play("fall")
-
 	# 进入 idle
 	if _owner.on_ground:
 		change_state("Idle")
@@ -18,6 +16,9 @@ func Update(delta: float) -> void:
 	# 进入 slip
 	if _owner.on_wall == true and _owner.move_input != 0.0 and not Input.is_action_pressed("grab"):
 		change_state("Slip")
+		
+	# 播放动画
+	_owner.animation.play("fall")
 
 func End() -> void:
 	_owner.can_jump = true

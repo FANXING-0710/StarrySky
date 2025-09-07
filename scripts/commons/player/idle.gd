@@ -5,8 +5,6 @@ func Begin() -> void:
     print("进入 Idle 状态")
 
 func Update(delta: float) -> void:
-    _owner.animation.play("idle")
-
     # 进入 fall
     if _owner.velocity.y != 0 and not _owner.is_jumping:
         change_state("Fall")
@@ -26,6 +24,9 @@ func Update(delta: float) -> void:
     # 进入 wall
     if _owner.can_on_wall:
         change_state("Wall")
+    
+    # 播放动画
+    _owner.animation.play("idle")
         
 func End() -> void:
     print("退出 Idle")

@@ -5,9 +5,6 @@ func Begin() -> void:
 	print("进入 Climb 状态")
 
 func Update(delta: float) -> void:
-	# _owner.animation.play("climb")
-	_owner.animation.play("wall")
-
 	_owner.stamina -= 30 * delta
 
 	_owner.velocity.y = move_toward(_owner.velocity.y, -_owner.CLIMB_UP_SPEED, _owner.CLIMB_ACCEL * delta)
@@ -25,6 +22,10 @@ func Update(delta: float) -> void:
 	# 进入 slip
 	if _owner.stamina <= 0:
 		change_state("Slip")
+	
+	# 播放动画
+	# _owner.animation.play("climb")
+	_owner.animation.play("wall")
 
 
 func End() -> void:

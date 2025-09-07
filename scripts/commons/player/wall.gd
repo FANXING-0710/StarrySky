@@ -6,7 +6,6 @@ func Begin() -> void:
 
 func Update(delta: float) -> void:
 	_owner.velocity.y = 0
-	_owner.animation.play("wall")
 
 	_owner.stamina -= 10 * delta
 
@@ -28,6 +27,9 @@ func Update(delta: float) -> void:
 		
 	if _owner.on_wall == false:
 		change_state("Fall")
+	
+	# 播放动画
+	_owner.animation.play("wall")
 
 func End() -> void:
 	_owner.is_walling = false

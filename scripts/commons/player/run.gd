@@ -5,8 +5,6 @@ func Begin() -> void:
     # _owner.stop()   # 调用 Player.gd 的函数
 
 func Update(delta: float) -> void:
-    _owner.animation.play("run")
-
     # 进入 idle
     if _owner.velocity.x == 0 and _owner.move_input == 0:
         change_state("Idle")
@@ -21,6 +19,9 @@ func Update(delta: float) -> void:
 
     if _owner.is_jumping:
         change_state("Jump")
+        
+    # 播放动画
+    _owner.animation.play("run")
 
 func End() -> void:
     print("退出 Run")
