@@ -11,9 +11,13 @@ func Update(delta: float) -> void:
 	if _owner.on_ground:
 		change_state("Idle")
 
-    # 进入 wall
+	# 进入 wall
 	if _owner.on_wall == true and Input.is_action_pressed("grab"):
 		change_state("Wall")
+
+	# 进入 slip
+	if _owner.on_wall == true and _owner.move_input != 0.0 and not Input.is_action_pressed("grab"):
+		change_state("Slip")
 
 func End() -> void:
 	_owner.can_jump = true

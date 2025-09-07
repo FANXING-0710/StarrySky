@@ -273,10 +273,19 @@ size = Vector2(15, 22)
 [node name="Player" type="CharacterBody2D"]
 script = ExtResource("1_dqkch")
 
-[node name="Animation" type="AnimatedSprite2D" parent="."]
+[node name="Grapsics" type="Node2D" parent="."]
+
+[node name="Animation" type="AnimatedSprite2D" parent="Grapsics"]
 sprite_frames = SubResource("SpriteFrames_jej6c")
 animation = &"wall"
 autoplay = "idle"
+
+[node name="HandChecker" type="RayCast2D" parent="Grapsics"]
+target_position = Vector2(8.5, 0)
+
+[node name="FootChecker" type="RayCast2D" parent="Grapsics"]
+position = Vector2(0, 11)
+target_position = Vector2(8.5, 0)
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="."]
 position = Vector2(0.5, 5)

@@ -1,6 +1,9 @@
 extends CharacterBody2D
 
-@onready var animation: AnimatedSprite2D = $Animation
+@onready var animation: AnimatedSprite2D = $Grapsics/Animation
+@onready var hand_checker: RayCast2D = $Grapsics/HandChecker
+@onready var foot_checker: RayCast2D = $Grapsics/FootChecker
+@onready var grapsics: Node2D = $Grapsics
 
 ## 物理常数
 const GRAVITY := 900.0 # 普通重力加速度
@@ -43,7 +46,7 @@ var buffer_timer := 0.0 # 提前按跳缓冲
 var is_walling := false # 是否正在墙上
 var stamina := CLIMB_MAX_STAMINA # 当前体力
 var on_wall := false # 是否在贴墙
-var wall_dir := 0 # 贴哪一边的墙：-1：左墙，1：右墙
+# var wall_dir := 0 # 贴哪一边的墙：-1：左墙，1：右墙
 
 func _physics_process(delta: float) -> void:
 	# 更新变量
@@ -73,19 +76,11 @@ func _physics_process(delta: float) -> void:
 	move_and_slide() # 移动角色
 
 
-# 方向反转
+# 素材反转
 func direction_reversal() -> void:
-	if is_walling == true:
-		if wall_dir == -1:
-			animation.flip_h = false
-		elif wall_dir == 1:
-			animation.flip_h = true
-	else:
-		if move_input == 1.0:
-			animation.flip_h = false
-		elif move_input == -1.0:
-			animation.flip_h = true
-	
+	if move_input != 0.0:
+		grapsics.scale.x = move_input
+		
 
 # 重力
 func apply_gravity(delta: float) -> void:
@@ -103,6 +98,7 @@ func apply_gravity(delta: float) -> void:
 		velocity.y += GRAVITY * delta
 		if velocity.y > MAX_FALL:
 			velocity.y = MAX_FALL
+
 
 # 移动
 func apply_horizontal_move(delta: float) -> void:
@@ -123,6 +119,7 @@ func apply_horizontal_move(delta: float) -> void:
 	else:
 		# 无输入 → 速度衰减
 		velocity.x = move_toward(velocity.x, 0, RUN_REDUCE * delta)
+
 
 # 跳跃
 func handle_jump_input(delta: float) -> void:
@@ -149,18 +146,25 @@ func handle_jump_input(delta: float) -> void:
 	if var_jump_timer > 0.0 and velocity.y < 0:
 		var_jump_timer -= delta
 	elif velocity.y < 0 and not Input.is_action_pressed("jump"):
-		# 提前松开 → 强制加快下落
-		velocity.y *= 0.5
+		velocity.y = velocity.y * 0.5 # 或者 velocity.y = max(velocity.y, -JUMP_SPEED * 0.5)
 		var_jump_timer = 0.0
+
 
 # 检测墙体连接
 func check_wall_contact() -> void:
-	# Godot 自带检测：是否仅碰到墙壁
-	if is_on_wall():
-		# 获取最后一次碰撞的法线，x > 0 表示左墙，x < 0 表示右墙
-		wall_dir = sign(get_last_slide_collision().get_normal().x)
+	# # 检测：是否仅碰到墙壁
+	# if is_on_wall():
+	#     # 获取最后一次碰撞的法线，x > 0 表示左墙，x < 0 表示右墙
+	#     wall_dir = sign(get_last_slide_collision().get_normal().x)
+	#     on_wall = true
+	# else:
+	#     # 没有碰到墙
+	#     on_wall = false
+	#     wall_dir = 0
+
+	# 检测：是否仅碰到墙壁
+	if hand_checker.is_colliding() or foot_checker.is_colliding():
 		on_wall = true
 	else:
 		# 没有碰到墙
 		on_wall = false
-		wall_dir = 0

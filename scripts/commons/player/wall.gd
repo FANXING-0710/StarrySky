@@ -22,9 +22,14 @@ func Update(delta: float) -> void:
 	if _owner.on_wall == true and _owner.stamina <= 0:
 		change_state("Slip")
 		
-	# 进入 fall
-	if _owner.on_wall == false or Input.is_action_just_released("grab"):
+	if _owner.on_wall == false:
 		change_state("Fall")
+
+	# 进入 fall
+	if _owner.on_wall == true and Input.is_action_just_released("grab") and _owner.move_input == 0.0:
+		change_state("Fall")
+	elif _owner.on_wall == true and Input.is_action_just_released("grab") and _owner.move_input != 0.0:
+		change_state("Slip")
 	
 
 func End() -> void:

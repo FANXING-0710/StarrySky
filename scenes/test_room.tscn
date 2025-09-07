@@ -44,4 +44,3 @@ tile_set = SubResource("TileSet_h8avn")
 
 [node name="Player" parent="." instance=ExtResource("2_4adyp")]
 position = Vector2(14, -5)
-safe_margin = 1.0

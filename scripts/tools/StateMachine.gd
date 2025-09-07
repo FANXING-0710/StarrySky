@@ -42,7 +42,7 @@ func change_state(new_state_name: String) -> void:
 	if current_state.has_method("Begin"):
 		current_state.Begin()
 	# 打印调试信息
-	print_debug_chart()
+	# print_debug_chart()
 
 ## 启动指定状态的协程
 ## @param new_state_name: 要启动协程的状态名称
