@@ -2,6 +2,8 @@ extends State
 
 func Begin() -> void:
 	_owner.is_walling = true
+	_owner.can_apply_gravity = false
+	_owner.can_move = false
 	print("进入 Climb 状态")
 
 func Update(delta: float) -> void:
@@ -12,9 +14,6 @@ func Update(delta: float) -> void:
 
 	_owner.velocity.y = move_toward(_owner.velocity.y, -_owner.CLIMB_UP_SPEED, _owner.CLIMB_ACCEL * delta)
 		
-	# 进入 fall
-	if _owner.on_wall == false:
-		change_state("Fall")
 
 	# 进入 wall 或 slip
 	if Input.is_action_just_released("up"):
@@ -23,10 +22,18 @@ func Update(delta: float) -> void:
 		change_state("Slip")
 
 	# 进入 fall 或 slip
-	if _owner.move_input == 0 and Input.is_action_just_released("grab"):
-		change_state("Fall")
-	elif _owner.move_input != 0 and Input.is_action_just_released("grab"):
+	if _owner.wall_dir == -1 and Input.is_action_pressed("left") and Input.is_action_just_released("grab"):
 		change_state("Slip")
+	elif _owner.wall_dir == 1 and Input.is_action_pressed("right") and Input.is_action_just_released("grab"):
+		change_state("Slip")
+	elif _owner.on_wall == false or not Input.is_action_pressed("grab"):
+		change_state("Fall")
+
+	# 进入 fall 或 slip
+	# if _owner.move_input == 0 and Input.is_action_just_released("grab"):
+	# 	change_state("Fall")
+	# elif _owner.move_input != 0 and Input.is_action_just_released("grab"):
+	# 	change_state("Slip")
 
 	# 进入 slip
 	if _owner.stamina <= 0:
@@ -39,4 +46,6 @@ func Update(delta: float) -> void:
 
 func End() -> void:
 	_owner.is_walling = false
+	_owner.can_apply_gravity = true
+	_owner.can_move = true
 	print("退出 Climb")

@@ -23,7 +23,7 @@ const JUMP_COYOTE_TIME := 0.10 # 落地后宽容时间
 const JUMP_BUFFER_TIME := 0.10 # 提前按键缓冲
 # 攀爬相关
 const CLIMB_MAX_STAMINA: float = 110.0 # 最大体力值
-const CLIMB_UP_SPEED: float = 45.0 # 向上攀爬速度（像素/秒）
+const CLIMB_UP_SPEED: float = 90.0 # 向上攀爬速度（像素/秒）
 const CLIMB_DOWN_SPEED: float = 80.0 # 向下攀爬速度（像素/秒）
 const CLIMB_SLIP_SPEED: float = 30.0 # 体力耗尽时的滑落速度
 const CLIMB_ACCEL: float = 900.0 # 攀爬加速度，让速度逐渐逼近目标值
@@ -58,14 +58,7 @@ func _physics_process(delta: float) -> void:
 		can_on_wall = true
 	else:
 		can_on_wall = false
-
-	if is_walling:
-		can_apply_gravity = false
-		can_move = false
-	else:
-		can_apply_gravity = true
-		can_move = true
-		
+	
 	# 更新 Coyote Time
 	if on_ground:
 		coyote_timer = JUMP_COYOTE_TIME
@@ -84,9 +77,6 @@ func _physics_process(delta: float) -> void:
 
 	apply_horizontal_move(delta)
 	move_and_slide() # 移动角色
-
-	print(wall_dir)
-
 
 # 方向反转
 func direction_reversal() -> void:

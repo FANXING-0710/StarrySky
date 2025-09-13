@@ -2,6 +2,8 @@ extends State
 
 func Begin() -> void:
 	_owner.is_walling = true
+	_owner.can_apply_gravity = false
+	_owner.can_move = false
 	print("进入 Slip 状态")
 
 func Update(delta: float) -> void:
@@ -16,9 +18,12 @@ func Update(delta: float) -> void:
 		change_state("Fall")
 	elif _owner.wall_dir == 1 and Input.is_action_just_released("right"):
 		change_state("Fall")
-	# if Input.is_action_just_released("left") or Input.is_action_just_released("right"):
-	# 	change_state("Fall")
-	
+	if _owner.wall_dir == -1 and Input.is_action_pressed("right") and not Input.is_action_pressed("left"):
+		change_state("Fall")
+	elif _owner.wall_dir == 1 and Input.is_action_pressed("left") and not Input.is_action_pressed("right"):
+		change_state("Fall")
+
+
 	# 进入 wall
 	if Input.is_action_just_pressed("grab"):
 		change_state("Wall")
@@ -37,4 +42,6 @@ func Update(delta: float) -> void:
 	
 func End() -> void:
 	_owner.is_walling = false
+	_owner.can_apply_gravity = true
+	_owner.can_move = true
 	print("退出 Slip")
