@@ -281,6 +281,7 @@ animation = &"wall"
 autoplay = "idle"
 
 [node name="HandChecker" type="RayCast2D" parent="Grapsics"]
+position = Vector2(0, 4)
 target_position = Vector2(9, 0)
 
 [node name="FootChecker" type="RayCast2D" parent="Grapsics"]

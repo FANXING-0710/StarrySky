@@ -22,3 +22,4 @@ func Update(delta: float) -> void:
 func End() -> void:
 	print("退出 Crouch")
 	_owner.can_move = true
+	_owner.can_jump = true

@@ -22,12 +22,13 @@ const VAR_JUMP_TIME := 0.20 # 可变跳窗口
 const JUMP_COYOTE_TIME := 0.10 # 落地后宽容时间
 const JUMP_BUFFER_TIME := 0.10 # 提前按键缓冲
 # 攀爬相关
-const CLIMB_MAX_STAMINA: float = 110.0 # 最大体力值
-const CLIMB_UP_SPEED: float = 90.0 # 向上攀爬速度（像素/秒）
-const CLIMB_DOWN_SPEED: float = 80.0 # 向下攀爬速度（像素/秒）
-const CLIMB_SLIP_SPEED: float = 30.0 # 体力耗尽时的滑落速度
-const CLIMB_ACCEL: float = 900.0 # 攀爬加速度，让速度逐渐逼近目标值
-const WALL_JUMP_FORCE: Vector2 = Vector2(120, 105) # 攀爬跳的水平与垂直初速度、
+const CLIMB_MAX_STAMINA := 110.0 # 最大体力值
+const CLIMB_UP_SPEED := 150 # 向上攀爬速度（像素/秒）
+const CLIMB_DOWN_SPEED := 80.0 # 向下攀爬速度（像素/秒）
+const CLIMB_SLIP_SPEED := 30.0 # 体力耗尽时的滑落速度
+const CLIMB_ACCEL := 5600.0 # 攀爬加速度，让速度逐渐逼近目标值
+const CLIMB_OFFSET := Vector2(65,-300) # 爬过墙的补偿
+const WALL_JUMP_FORCE := Vector2(120, 105) # 攀爬跳的水平与垂直初速度
 
 ## 变量
 # var velocity: Vector2 # CharacterBody2D的隐藏变量
@@ -35,7 +36,7 @@ var holding := false # 是否正在抱物体
 var move_input := Input.get_action_strength("right") - Input.get_action_strength("left") # 读取左右输入（1：右，-1：左）
 var on_ground := is_on_floor() # 当前是否在地面
 var can_apply_gravity := true # 是否可以应用重力
-var can_move := true #是否可以应用移动
+var can_move := true # 是否可以应用移动
 # 跳跃相关
 var can_jump := true
 var is_jumping := false # 是否正在跳跃
@@ -48,12 +49,14 @@ var stamina := CLIMB_MAX_STAMINA # 当前体力
 var on_wall := false # 是否在贴墙
 var can_on_wall := false # 是否可以贴墙
 var wall_dir := 0 # 贴哪一边的墙：-1：左墙，1：右墙
+var is_complete_climb := false # 是否完成攀爬
 
 func _physics_process(delta: float) -> void:
 	# 更新变量
 	move_input = Input.get_action_strength("right") - Input.get_action_strength("left")
 	on_ground = is_on_floor()
 
+	#是否可以攀爬
 	if on_wall == true and Input.is_action_pressed("grab") and stamina > 0:
 		can_on_wall = true
 	else:
@@ -71,12 +74,13 @@ func _physics_process(delta: float) -> void:
 	
 	direction_reversal() # 方向反转
 	handle_jump_input(delta) # 跳跃
-
-	# 攀爬
 	check_wall_contact() # 检查是否贴着墙，并更新方向
-
-	apply_horizontal_move(delta)
+	apply_horizontal_move(delta) # 移动
 	move_and_slide() # 移动角色
+
+	# print(is_complete_climb)
+	print(velocity)
+	print(delta)
 
 # 方向反转
 func direction_reversal() -> void:
@@ -165,10 +169,16 @@ func check_wall_contact() -> void:
 		else:
 			wall_normal = foot_checker.get_collision_normal()
 		# 根据法线方向判断是左墙还是右墙
-		if wall_normal.x > 0:  # 法线向右，说明是左墙
+		if wall_normal.x > 0: # 法线向右，说明是左墙
 			wall_dir = -1
-		elif wall_normal.x < 0:  # 法线向左，说明是右墙
+		elif wall_normal.x < 0: # 法线向左，说明是右墙
 			wall_dir = 1
 	else:
 		# 没有碰到墙
 		on_wall = false
+
+	# 检测：是否完成攀爬
+	if not hand_checker.is_colliding() and foot_checker.is_colliding():
+		is_complete_climb = true
+	else:
+		is_complete_climb = false

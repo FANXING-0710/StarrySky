@@ -4,6 +4,7 @@ func Begin() -> void:
 	_owner.is_walling = true
 	_owner.can_apply_gravity = false
 	_owner.can_move = false
+	_owner.can_jump = false
 	print("进入 Slip 状态")
 
 func Update(delta: float) -> void:
@@ -44,4 +45,5 @@ func End() -> void:
 	_owner.is_walling = false
 	_owner.can_apply_gravity = true
 	_owner.can_move = true
+	_owner.can_jump = true
 	print("退出 Slip")
