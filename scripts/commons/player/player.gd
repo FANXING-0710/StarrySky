@@ -23,11 +23,11 @@ const JUMP_COYOTE_TIME := 0.10 # 落地后宽容时间
 const JUMP_BUFFER_TIME := 0.10 # 提前按键缓冲
 # 攀爬相关
 const CLIMB_MAX_STAMINA := 110.0 # 最大体力值
-const CLIMB_UP_SPEED := 150 # 向上攀爬速度（像素/秒）
+const CLIMB_UP_SPEED := 45 # 向上攀爬速度（像素/秒）
 const CLIMB_DOWN_SPEED := 80.0 # 向下攀爬速度（像素/秒）
 const CLIMB_SLIP_SPEED := 30.0 # 体力耗尽时的滑落速度
-const CLIMB_ACCEL := 5600.0 # 攀爬加速度，让速度逐渐逼近目标值
-const CLIMB_OFFSET := Vector2(65,-300) # 爬过墙的补偿
+const CLIMB_ACCEL := 900.0 # 攀爬加速度，让速度逐渐逼近目标值
+const CLIMB_OFFSET := Vector2(65,-100) # 爬过墙的补偿
 const WALL_JUMP_FORCE := Vector2(120, 105) # 攀爬跳的水平与垂直初速度
 
 ## 变量
@@ -71,9 +71,12 @@ func _physics_process(delta: float) -> void:
 	# 是否应用重力
 	if can_apply_gravity == true:
 		apply_gravity(delta) # 重力
+
+	# 是否应用跳跃
+	if can_jump == true:
+		handle_jump_input(delta) # 跳跃
 	
 	direction_reversal() # 方向反转
-	handle_jump_input(delta) # 跳跃
 	check_wall_contact() # 检查是否贴着墙，并更新方向
 	apply_horizontal_move(delta) # 移动
 	move_and_slide() # 移动角色
