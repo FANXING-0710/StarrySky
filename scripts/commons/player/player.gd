@@ -47,7 +47,7 @@ var is_walling := false # 是否正在墙上
 var stamina := CLIMB_MAX_STAMINA # 当前体力
 var on_wall := false # 是否在贴墙
 var can_on_wall := false # 是否可以贴墙
-# var wall_dir := 0 # 贴哪一边的墙：-1：左墙，1：右墙
+var wall_dir := 0 # 贴哪一边的墙：-1：左墙，1：右墙
 
 func _physics_process(delta: float) -> void:
 	# 更新变量
@@ -84,6 +84,8 @@ func _physics_process(delta: float) -> void:
 
 	apply_horizontal_move(delta)
 	move_and_slide() # 移动角色
+
+	print(wall_dir)
 
 
 # 方向反转
@@ -163,18 +165,20 @@ func handle_jump_input(delta: float) -> void:
 
 # 检测墙体连接
 func check_wall_contact() -> void:
-	# # 检测：是否仅碰到墙壁
-	# if is_on_wall():
-	#     # 获取最后一次碰撞的法线，x > 0 表示左墙，x < 0 表示右墙
-	#     wall_dir = sign(get_last_slide_collision().get_normal().x)
-	#     on_wall = true
-	# else:
-	#     # 没有碰到墙
-	#     on_wall = false
-	#     wall_dir = 0
-	# 检测：是否仅碰到墙壁
+	# 检测：是否碰到墙壁
 	if hand_checker.is_colliding() or foot_checker.is_colliding():
 		on_wall = true
+		# 判断贴墙方向
+		var wall_normal: Vector2
+		if hand_checker.is_colliding():
+			wall_normal = hand_checker.get_collision_normal()
+		else:
+			wall_normal = foot_checker.get_collision_normal()
+		# 根据法线方向判断是左墙还是右墙
+		if wall_normal.x > 0:  # 法线向右，说明是左墙
+			wall_dir = -1
+		elif wall_normal.x < 0:  # 法线向左，说明是右墙
+			wall_dir = 1
 	else:
 		# 没有碰到墙
 		on_wall = false

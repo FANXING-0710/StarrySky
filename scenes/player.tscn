@@ -281,11 +281,11 @@ animation = &"wall"
 autoplay = "idle"
 
 [node name="HandChecker" type="RayCast2D" parent="Grapsics"]
-target_position = Vector2(8.5, 0)
+target_position = Vector2(9, 0)
 
 [node name="FootChecker" type="RayCast2D" parent="Grapsics"]
 position = Vector2(0, 11)
-target_position = Vector2(8.5, 0)
+target_position = Vector2(9, 0)
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="."]
 position = Vector2(0.5, 5)

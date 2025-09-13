@@ -14,8 +14,12 @@ func Update(delta: float) -> void:
 		change_state("Wall")
 
 	# 进入 slip
-	if _owner.on_wall == true and _owner.move_input != 0.0 and not Input.is_action_pressed("grab"):
+	if _owner.on_wall == true and not Input.is_action_pressed("grab") and _owner.wall_dir == -1 and Input.is_action_pressed("left"):
 		change_state("Slip")
+	elif _owner.on_wall == true and not Input.is_action_pressed("grab") and _owner.wall_dir == 1 and Input.is_action_pressed("right"):
+		change_state("Slip")
+	# if _owner.on_wall == true and _owner.move_input != 0.0 and not Input.is_action_pressed("grab"):
+	# 	change_state("Slip")
 		
 	# 播放动画
 	_owner.animation.play("fall")

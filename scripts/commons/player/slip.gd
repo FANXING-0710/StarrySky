@@ -12,8 +12,12 @@ func Update(delta: float) -> void:
 		change_state("Fall")
 	if Input.is_action_just_released("grab"):
 		change_state("Fall")
-	if Input.is_action_just_released("left") or Input.is_action_just_released("right"):
+	if _owner.wall_dir == -1 and Input.is_action_just_released("left"):
 		change_state("Fall")
+	elif _owner.wall_dir == 1 and Input.is_action_just_released("right"):
+		change_state("Fall")
+	# if Input.is_action_just_released("left") or Input.is_action_just_released("right"):
+	# 	change_state("Fall")
 	
 	# 进入 wall
 	if Input.is_action_just_pressed("grab"):

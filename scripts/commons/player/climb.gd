@@ -5,6 +5,9 @@ func Begin() -> void:
 	print("进入 Climb 状态")
 
 func Update(delta: float) -> void:
+	#TODO:
+		#判断：如果手没有抓住墙，下面有则翻过了
+		#翻过后加翻墙
 	_owner.stamina -= 30 * delta
 
 	_owner.velocity.y = move_toward(_owner.velocity.y, -_owner.CLIMB_UP_SPEED, _owner.CLIMB_ACCEL * delta)
