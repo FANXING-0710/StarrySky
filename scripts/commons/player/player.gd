@@ -90,6 +90,7 @@ func _physics_process(delta: float) -> void:
     # print(velocity)
     # print(delta)
     # print(on_ground)
+    # print(wall_grace_timer)
 
 # 方向反转
 func direction_reversal() -> void:

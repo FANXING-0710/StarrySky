@@ -9,7 +9,11 @@ func Begin() -> void:
 
 func Update(delta: float) -> void:
 	_owner.velocity.y = move_toward(_owner.velocity.y, _owner.CLIMB_DOWN_SPEED, _owner.CLIMB_ACCEL * delta)
-		
+	
+	if Input.is_action_just_pressed("jump"):
+		_owner.velocity = Vector2(-_owner.wall_dir * _owner.WALL_JUMP_FORCE.x, -_owner.WALL_JUMP_FORCE.y)
+		change_state("Jump")
+
 	# 进入 fall
 	if _owner.on_wall == false:
 		change_state("Fall")

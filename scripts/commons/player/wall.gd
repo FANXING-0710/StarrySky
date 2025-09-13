@@ -10,8 +10,12 @@ func Begin() -> void:
 func Update(delta: float) -> void:
 	_owner.velocity.y = 0
 	_owner.stamina -= 10 * delta
-	if Input.is_action_just_pressed("jump"):
-		_owner.velocity = Vector2(_owner.wall_dir * _owner.WALL_JUMP_FORCE.x, -_owner.WALL_JUMP_FORCE.y)
+	if Input.is_action_just_pressed("jump") and _owner.move_input == 1:
+		_owner.velocity = Vector2(-_owner.wall_dir * _owner.WALL_JUMP_FORCE.x, -_owner.WALL_JUMP_FORCE.y)
+		_owner.stamina -= _owner.CLIMB_JUMP_STAMINA_COST
+		change_state("Jump")
+	elif Input.is_action_just_pressed("jump"):
+		_owner.velocity = Vector2(0, -_owner.WALL_JUMP_FORCE.y)
 		_owner.stamina -= _owner.CLIMB_JUMP_STAMINA_COST
 		change_state("Jump")
 

@@ -13,7 +13,10 @@ func Update(delta: float) -> void:
         #翻过后加翻墙
     _owner.stamina -= 30 * delta
     _owner.velocity.y = move_toward(_owner.velocity.y, -_owner.CLIMB_UP_SPEED, _owner.CLIMB_ACCEL * delta)
-    
+    if Input.is_action_just_pressed("jump"):
+        _owner.velocity = Vector2(0, -_owner.WALL_JUMP_FORCE.y)
+        _owner.stamina -= _owner.CLIMB_JUMP_STAMINA_COST
+        change_state("Jump")
 
     # 攀爬补偿
     if _owner.is_complete_climb == true and Input.is_action_pressed("up"):
