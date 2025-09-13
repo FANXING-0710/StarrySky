@@ -82,8 +82,8 @@ func _physics_process(delta: float) -> void:
 	move_and_slide() # 移动角色
 
 	# print(is_complete_climb)
-	print(velocity)
-	print(delta)
+	# print(velocity)
+	# print(delta)
 
 # 方向反转
 func direction_reversal() -> void:
