@@ -6,7 +6,7 @@ func Begin() -> void:
 
 func Update(delta: float) -> void:
     # 进入 fall
-    if _owner.velocity.y != 0 and not _owner.is_jumping:
+    if _owner.velocity.y > 0 and not _owner.on_ground:
         change_state("Fall")
 
     # 进入 run
@@ -18,7 +18,7 @@ func Update(delta: float) -> void:
         change_state("Crouch")
         
     # 进入 jump
-    if _owner.is_jumping:
+    if _owner.velocity.y < 0:
         change_state("Jump")
 
     # 进入 wall

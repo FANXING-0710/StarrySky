@@ -12,5 +12,4 @@ func Update(delta: float) -> void:
     _owner.animation.play("jump")
 
 func End() -> void:
-    _owner.is_jumping = false
     print("退出 Jump")
