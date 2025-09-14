@@ -32,6 +32,11 @@ const CLIMB_OFFSET := Vector2(65, -100) # 爬过墙的补偿
 const WALL_JUMP_FORCE := Vector2(120.0, 105.0) # 蹬墙跳速度
 const WALL_JUMP_GRACE := 0.10 # 离开墙壁后还能蹬的缓冲时间
 const CLIMB_JUMP_STAMINA_COST := 20.0 # 攀爬跳体力消耗
+## Dash
+const DASH_SPEED: float = 240.0 # 冲刺速度
+const DASH_TIME: float = 0.05 # 冲刺持续时间
+const DASH_COOLDOWN: float = 0.2 # 冲刺结束后冷却时间
+const MAX_DASHES: int = 1 # 默认 1 次 Dash（后期可升级到 2 次）
 
 ## 变量
 # var velocity: Vector2 # CharacterBody2D的隐藏变量
@@ -40,6 +45,7 @@ var move_input := Input.get_action_strength("right") - Input.get_action_strength
 var on_ground := is_on_floor() # 当前是否在地面
 var can_apply_gravity := true # 是否可以应用重力
 var can_move := true # 是否可以应用移动
+var is_crouching := false
 # 跳跃相关
 var can_jump := true
 var is_jumping := false # 是否正在跳跃
@@ -54,143 +60,203 @@ var can_on_wall := false # 是否可以贴墙
 var wall_dir := 0 # 贴哪一边的墙：-1：左墙，1：右墙
 var is_complete_climb := false # 是否完成攀爬
 var wall_grace_timer := 0.0 # 离墙缓冲计时
+# Dash
+var dash_dir := Vector2.ZERO # 当前冲刺方向
+var dashes_left := MAX_DASHES # 剩余 Dash 数
+var is_dashing := false # 是否正在冲刺
+var dash_timer := 0.0 # 冲刺计时
+var dash_cooldown := 0.0 # 冲刺冷却计时
 
 func _physics_process(delta: float) -> void:
-    # 更新变量
-    move_input = Input.get_action_strength("right") - Input.get_action_strength("left") # 更新输入
-    on_ground = is_on_floor() # 更新地面状态
-    wall_grace_timer = max(wall_grace_timer - delta, 0.0) # 更新缓冲计时
+	# 更新变量
+	move_input = Input.get_action_strength("right") - Input.get_action_strength("left") # 更新输入
+	on_ground = is_on_floor() # 更新地面状态
+	wall_grace_timer = max(wall_grace_timer - delta, 0.0) # 更新缓冲计时
 
-    #是否可以攀爬
-    if on_wall == true and Input.is_action_pressed("grab") and stamina > 0:
-        can_on_wall = true
-    else:
-        can_on_wall = false
-    
-    # 更新 Coyote Time
-    if on_ground:
-        coyote_timer = JUMP_COYOTE_TIME
-    else:
-        coyote_timer = max(coyote_timer - delta, 0.0)
+	# # 是否应用重力
+	# if can_apply_gravity == true:
+	#     apply_gravity(delta) # 重力
 
-    # 是否应用重力
-    if can_apply_gravity == true:
-        apply_gravity(delta) # 重力
+	#是否可以攀爬
+	if on_wall == true and Input.is_action_pressed("grab") and stamina > 0:
+		can_on_wall = true
+	else:
+		can_on_wall = false
+	
+	# 跳跃相关
+	# 更新 Coyote Time
+	if on_ground:
+		coyote_timer = JUMP_COYOTE_TIME
+	else:
+		coyote_timer = max(coyote_timer - delta, 0.0)
+	# 是否应用跳跃
+	if can_jump == true:
+		handle_jump_input(delta) # 跳跃
 
-    # 是否应用跳跃
-    if can_jump == true:
-        handle_jump_input(delta) # 跳跃
-    
-    direction_reversal() # 方向反转
-    check_wall() # 检查是否贴着墙，并更新方向
-    apply_horizontal_move(delta) # 移动
-    move_and_slide() # 移动角色
+	# Dash相关
+	if is_dashing:
+		can_jump = false
+		dash_timer -= delta
+		if dash_timer <= 0.0:
+			end_dash()
+		else:
+			# Dash 期间锁定速度
+			velocity = dash_dir * DASH_SPEED
+	elif dash_cooldown > 0.0:
+		dash_cooldown -= delta
+	else:
+		# 普通运动逻辑（重力、移动等）
+		if can_apply_gravity == true:
+			apply_gravity(delta) # 重力
+		apply_horizontal_move(delta)
 
-    # print(is_complete_climb)
-    # print(velocity)
-    # print(delta)
-    # print(on_ground)
-    # print(wall_grace_timer)
+	# 落地恢复 dash 次数
+	if is_on_floor():
+		dashes_left = MAX_DASHES
+
+	handle_dash_input()
+	direction_reversal() # 方向反转
+	check_wall() # 检查是否贴着墙，并更新方向
+	# apply_horizontal_move(delta) # 移动
+	move_and_slide() # 移动角色
+
 
 # 方向反转
 func direction_reversal() -> void:
-    if move_input != 0.0 and not is_walling:
-        grapsics.scale.x = move_input
+	if move_input != 0.0 and not is_walling:
+		grapsics.scale.x = move_input
 
 # 重力
 func apply_gravity(delta: float) -> void:
-    # 是否按下“向下键” → 快速下落
-    var fast_fall := Input.is_action_pressed("down")
+	# 是否按下“向下键” → 快速下落
+	var fast_fall := Input.is_action_pressed("down")
 
-    if fast_fall == true:
-        # 快速下落：使用更强的重力
-        velocity.y += FAST_FALL_GRAVITY * delta
-        # 限制最大下落速度
-        if velocity.y > FAST_MAX_FALL:
-            velocity.y = FAST_MAX_FALL
-    else:
-        # 普通重力
-        velocity.y += GRAVITY * delta
-        if velocity.y > MAX_FALL:
-            velocity.y = MAX_FALL
+	if fast_fall == true:
+		# 快速下落：使用更强的重力
+		velocity.y += FAST_FALL_GRAVITY * delta
+		# 限制最大下落速度
+		if velocity.y > FAST_MAX_FALL:
+			velocity.y = FAST_MAX_FALL
+	else:
+		# 普通重力
+		velocity.y += GRAVITY * delta
+		if velocity.y > MAX_FALL:
+			velocity.y = MAX_FALL
 
 # 移动
 func apply_horizontal_move(delta: float) -> void:
-    # 限制在墙上的移动
-    if can_move == false:
-        velocity.x = 0
-        return
+	# 限制在墙上的移动
+	if can_move == false:
+		velocity.x = 0
+		return
 
-    # # 读取左右输入
-    # var move_input: float = Input.get_action_strength("right") - Input.get_action_strength("left")
-    # 目标最大速度：是否抱物？
-    var max_speed: float = HOLDING_MAX_RUN if holding else MAX_RUN
+	# # 读取左右输入
+	# var move_input: float = Input.get_action_strength("right") - Input.get_action_strength("left")
+	# 目标最大速度：是否抱物？
+	var max_speed: float = HOLDING_MAX_RUN if holding else MAX_RUN
 
-    # # 当前是否在地面
-    # var on_ground: bool = is_on_floor()
+	# # 当前是否在地面
+	# var on_ground: bool = is_on_floor()
 
-    # 加速倍率：地面 = 1，空中 = AIR_MULT
-    var accel_mult: float = 1.0 if on_ground else AIR_MULT
+	# 加速倍率：地面 = 1，空中 = AIR_MULT
+	var accel_mult: float = 1.0 if on_ground else AIR_MULT
 
-    if move_input != 0.0:
-        # 有输入 → 向目标速度逼近
-        velocity.x = move_toward(velocity.x, move_input * max_speed, RUN_ACCEL * accel_mult * delta)
-    else:
-        # 无输入 → 速度衰减
-        velocity.x = move_toward(velocity.x, 0, RUN_REDUCE * delta)
+	if move_input != 0.0:
+		# 有输入 → 向目标速度逼近
+		velocity.x = move_toward(velocity.x, move_input * max_speed, RUN_ACCEL * accel_mult * delta)
+	else:
+		# 无输入 → 速度衰减
+		velocity.x = move_toward(velocity.x, 0, RUN_REDUCE * delta)
 
 # 跳跃
 func handle_jump_input(delta: float) -> void:
-    # 检测按下跳跃键 → 启动缓冲
-    if Input.is_action_just_pressed("jump"):
-        buffer_timer = JUMP_BUFFER_TIME
+	# 检测按下跳跃键 → 启动缓冲
+	if Input.is_action_just_pressed("jump"):
+		buffer_timer = JUMP_BUFFER_TIME
 
-    # 缓冲计时递减
-    buffer_timer = max(buffer_timer - delta, 0.0)
+	# 缓冲计时递减
+	buffer_timer = max(buffer_timer - delta, 0.0)
 
-    # 起跳条件：有缓冲 + 有宽容时间
-    if buffer_timer > 0.0 and coyote_timer > 0.0 and can_jump:
-        is_jumping = true
-        velocity.y = - JUMP_SPEED
-        var_jump_timer = VAR_JUMP_TIME
-        buffer_timer = 0.0 # 消耗掉缓冲
-        coyote_timer = 0.0 # 消耗掉宽容时间
+	# 起跳条件：有缓冲 + 有宽容时间
+	if buffer_timer > 0.0 and coyote_timer > 0.0 and can_jump:
+		is_jumping = true
+		velocity.y = - JUMP_SPEED
+		var_jump_timer = VAR_JUMP_TIME
+		buffer_timer = 0.0 # 消耗掉缓冲
+		coyote_timer = 0.0 # 消耗掉宽容时间
 
-    # 可变跳：松开跳跃键 → 立即结束可变时间
-    if Input.is_action_just_released("jump"):
-        var_jump_timer = 0.0
+	# 可变跳：松开跳跃键 → 立即结束可变时间
+	if Input.is_action_just_released("jump"):
+		var_jump_timer = 0.0
 
-    # 如果在可变跳时间内并且仍在上升
-    if var_jump_timer > 0.0 and velocity.y < 0:
-        var_jump_timer -= delta
-    elif velocity.y < 0 and not Input.is_action_pressed("jump"):
-        velocity.y = velocity.y * 0.5 # 或者 velocity.y = max(velocity.y, -JUMP_SPEED * 0.5)
-        var_jump_timer = 0.0
+	# 如果在可变跳时间内并且仍在上升
+	if var_jump_timer > 0.0 and velocity.y < 0:
+		var_jump_timer -= delta
+	elif velocity.y < 0 and not Input.is_action_pressed("jump"):
+		velocity.y = velocity.y * 0.5 # 或者 velocity.y = max(velocity.y, -JUMP_SPEED * 0.5)
+		var_jump_timer = 0.0
 
 # 检测墙体
 func check_wall() -> void:
-    # 检测：是否碰到墙壁
-    if hand_checker.is_colliding() or foot_checker.is_colliding():
-        on_wall = true
-        wall_grace_timer = WALL_JUMP_GRACE # 重置缓冲时间
+	# 检测：是否碰到墙壁
+	if hand_checker.is_colliding() or foot_checker.is_colliding():
+		on_wall = true
+		wall_grace_timer = WALL_JUMP_GRACE # 重置缓冲时间
 
-        # 判断贴墙方向
-        var wall_normal: Vector2
-        if hand_checker.is_colliding():
-            wall_normal = hand_checker.get_collision_normal()
-        else:
-            wall_normal = foot_checker.get_collision_normal()
-        # 根据法线方向判断是左墙还是右墙
-        if wall_normal.x > 0: # 法线向右，说明是左墙
-            wall_dir = -1
-        elif wall_normal.x < 0: # 法线向左，说明是右墙
-            wall_dir = 1
-    else:
-        # 没有碰到墙
-        on_wall = false
+		# 判断贴墙方向
+		var wall_normal: Vector2
+		if hand_checker.is_colliding():
+			wall_normal = hand_checker.get_collision_normal()
+		else:
+			wall_normal = foot_checker.get_collision_normal()
+		# 根据法线方向判断是左墙还是右墙
+		if wall_normal.x > 0: # 法线向右，说明是左墙
+			wall_dir = -1
+		elif wall_normal.x < 0: # 法线向左，说明是右墙
+			wall_dir = 1
+	else:
+		# 没有碰到墙
+		on_wall = false
 
-    # 检测：是否完成攀爬
-    if not hand_checker.is_colliding() and foot_checker.is_colliding():
-        is_complete_climb = true
-    else:
-        is_complete_climb = false
+	# 检测：是否完成攀爬
+	if not hand_checker.is_colliding() and foot_checker.is_colliding():
+		is_complete_climb = true
+	else:
+		is_complete_climb = false
+
+# Dash
+# 输入
+func handle_dash_input() -> void:
+	if Input.is_action_just_pressed("dash") and dashes_left > 0 and not is_dashing and dash_cooldown <= 0.0:
+		start_dash()
+
+# 开始 dash
+func start_dash() -> void:
+	# 读取方向输入
+	var input_dir = Vector2(
+		Input.get_action_strength("right") - Input.get_action_strength("left"),
+		Input.get_action_strength("down") - Input.get_action_strength("up")
+	)
+	if is_crouching == true and input_dir.x == 0:
+		input_dir = Vector2(grapsics.scale.x, 0)
+	elif input_dir == Vector2.ZERO:
+		# 没有输入时，用面向方向
+		input_dir = Vector2(grapsics.scale.x, 0)
+
+	dash_dir = input_dir.normalized()
+
+	# 开始 dash
+	is_dashing = true
+	dash_timer = DASH_TIME
+	dashes_left -= 1
+
+	# 暂时清零速度（避免旧速度影响）
+	velocity = dash_dir * DASH_SPEED
+
+# 停止 dash
+func end_dash() -> void:
+	is_dashing = false
+	dash_timer = 0.0
+	dash_cooldown = DASH_COOLDOWN
+	# dash 结束后，水平速度会保留一点（模拟 Celeste 手感）
+	velocity *= 0.6
