@@ -14,7 +14,7 @@ func Update(delta: float) -> void:
         change_state("Fall")
 
     # 进入 wall
-    if _owner.can_on_wall:
+    if _owner.on_wall and Input.is_action_pressed("grab") and _owner.stamina > 0:
         change_state("Wall")
 
     if _owner.velocity.y < 0:

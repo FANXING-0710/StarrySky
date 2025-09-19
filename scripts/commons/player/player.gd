@@ -55,7 +55,6 @@ var buffer_timer := 0.0 # 提前按跳缓冲
 var stamina := CLIMB_MAX_STAMINA # 当前体力
 var is_walling := false # 是否正在墙上
 var on_wall := false # 是否在贴墙
-var can_on_wall := false # 是否可以贴墙
 var wall_dir := 0 # 贴哪一边的墙：-1：左墙，1：右墙
 var is_complete_climb := false # 是否完成攀爬
 var wall_grace_timer := 0.0 # 离墙缓冲计时
@@ -75,13 +74,11 @@ func _physics_process(delta: float) -> void:
     # # 是否应用重力
     if can_apply_gravity == true:
         apply_gravity(delta) # 重力
-
-    #是否可以攀爬
-    if on_wall == true and Input.is_action_pressed("grab") and stamina > 0:
-        can_on_wall = true
-    else:
-        can_on_wall = false
     
+    # 体力
+    if on_ground:
+        stamina = CLIMB_MAX_STAMINA
+
     # 跳跃相关
     # 更新 Coyote Time
     if on_ground:
@@ -121,7 +118,7 @@ func _physics_process(delta: float) -> void:
 
     # print(can_apply_gravity)
     # print(coyote_timer)
-    print(buffer_timer)
+    # print(buffer_timer)
 
 
 # 方向反转
@@ -181,7 +178,7 @@ func handle_jump_input(delta: float) -> void:
     buffer_timer = max(buffer_timer - delta, 0.0)
 
     # 起跳条件：有缓冲 + 有宽容时间
-    if buffer_timer > 0.0 and (coyote_timer > 0.0 or can_jump):
+    if buffer_timer > 0.0 and (coyote_timer > 0.0 or on_ground):
         velocity.y = - JUMP_SPEED
         var_jump_timer = VAR_JUMP_TIME
         buffer_timer = 0.0 # 消耗掉缓冲

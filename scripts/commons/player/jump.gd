@@ -8,6 +8,10 @@ func Update(delta: float) -> void:
     if _owner.velocity.y > 0 and not _owner.on_ground:
         change_state("Fall")
     
+    # 进入 wall
+    if _owner.on_wall and Input.is_action_pressed("grab") and _owner.stamina > 0:
+        change_state("Wall")
+
     # 播放动画
     _owner.animation.play("jump")
 
