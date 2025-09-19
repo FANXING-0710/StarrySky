@@ -22,24 +22,25 @@ func Update(delta: float) -> void:
     # 进入 climb 或 slip
     if Input.is_action_pressed("up"):
         change_state("Climb")
-    elif Input.is_action_just_pressed("down"):
+    elif Input.is_action_pressed("down") and _owner.move_input == 0:
         change_state("Slip")
 
-    # 进入 fall 和 run
+    # 进入 run
     if _owner.move_input != 0 and Input.is_action_pressed("right") and Input.is_action_just_released("grab") and _owner.on_ground:
         change_state("Run")
     elif _owner.move_input != 0 and Input.is_action_pressed("left") and Input.is_action_just_released("grab") and _owner.on_ground:
         change_state("Run")
-    elif Input.is_action_just_released("grab"):
-        change_state("Fall")
-    elif _owner.on_wall == false:
-        change_state("Fall")
-
     # 进入 slip
     elif not Input.is_action_pressed("grab") and _owner.wall_dir == -1 and Input.is_action_pressed("left"):
         change_state("Slip")
     elif not Input.is_action_pressed("grab") and _owner.wall_dir == 1 and Input.is_action_pressed("right"):
         change_state("Slip")
+    # 进入 fall
+    elif Input.is_action_just_released("grab"):
+        change_state("Fall")
+    elif _owner.on_wall == false:
+        change_state("Fall")
+
     if _owner.stamina <= 0:
         change_state("Slip")
 

@@ -11,7 +11,7 @@ func Update(delta: float) -> void:
     # 进入 wall
     if _owner.on_wall and Input.is_action_pressed("grab") and _owner.stamina > 0:
         change_state("Wall")
-        
+
     # 进入 idle
     if _owner.on_ground:
         change_state("Idle")

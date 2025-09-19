@@ -119,6 +119,7 @@ func _physics_process(delta: float) -> void:
     # print(can_apply_gravity)
     # print(coyote_timer)
     # print(buffer_timer)
+    # print(Input.is_action_pressed("grab"))
 
 
 # 方向反转
