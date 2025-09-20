@@ -10,77 +10,77 @@ extends CharacterBody2D
 @onready var grapsics: Node2D = $Grapsics
 
 ## 物理常数
-const GRAVITY := 900.0 # 普通重力加速度
-const FAST_FALL_GRAVITY := 2000.0 # 快速下落时的重力加速度
-const MAX_FALL := 160.0 # 最大下落速度（普通）
-const FAST_MAX_FALL := 240.0 # 最大下落速度（快速下落）
+const GRAVITY: float = 900.0 # 普通重力加速度
+const FAST_FALL_GRAVITY: float = 2000.0 # 快速下落时的重力加速度
+const MAX_FALL: float = 160.0 # 最大下落速度（普通）
+const FAST_MAX_FALL: float = 240.0 # 最大下落速度（快速下落）
 ## 奔跑相关
-const MAX_RUN := 90.0 # 最大奔跑速度
-const HOLDING_MAX_RUN := 70.0 # 抱物时最大奔跑速度
-const RUN_ACCEL := 1000.0 # 加速度
-const RUN_REDUCE := 400.0 # 摩擦/减速率
-const AIR_MULT := 0.65 # 空中加速倍率
+const MAX_RUN: float = 90.0 # 最大奔跑速度
+const HOLDING_MAX_RUN: float = 70.0 # 抱物时最大奔跑速度
+const RUN_ACCEL: float = 1000.0 # 加速度
+const RUN_REDUCE: float = 400.0 # 摩擦/减速率
+const AIR_MULT: float = 0.65 # 空中加速倍率
 ## 跳跃相关
-const JUMP_SPEED := 105.0 * 2.5 # 跳跃初速度
-const VAR_JUMP_TIME := 0.20 # 可变跳窗口
-const JUMP_COYOTE_TIME := 0.10 # 落地后宽容时间
-const JUMP_BUFFER_TIME := 0.10 # 提前按键缓冲
+const JUMP_SPEED: float = 105.0 * 2.5 # 跳跃初速度
+const VAR_JUMP_TIME: float = 0.20 # 可变跳窗口
+const JUMP_COYOTE_TIME: float = 0.10 # 落地后宽容时间
+const JUMP_BUFFER_TIME: float = 0.10 # 提前按键缓冲
 ## 攀爬相关
-const CLIMB_MAX_STAMINA := 110.0 # 最大体力值
-const CLIMB_UP_SPEED := 45 # 向上攀爬速度（像素/秒）
-const CLIMB_DOWN_SPEED := 80.0 # 向下攀爬速度（像素/秒）
-const CLIMB_SLIP_SPEED := 30.0 # 体力耗尽时的滑落速度
-const CLIMB_ACCEL := 900.0 # 攀爬加速度，让速度逐渐逼近目标值
-const CLIMB_OFFSET := Vector2(65, -100) # 爬过墙的补偿
+const CLIMB_MAX_STAMINA: float = 110.0 # 最大体力值
+const CLIMB_UP_SPEED: float = 45 # 向上攀爬速度（像素/秒）
+const CLIMB_DOWN_SPEED: float = 80.0 # 向下攀爬速度（像素/秒）
+const CLIMB_SLIP_SPEED: float = 30.0 # 体力耗尽时的滑落速度
+const CLIMB_ACCEL: float = 900.0 # 攀爬加速度，让速度逐渐逼近目标值
+const CLIMB_OFFSET: Vector2 = Vector2(65, -100) # 爬过墙的补偿
 # 墙体跳跃
-const WALL_JUMP_FORCE := Vector2(120.0, 105.0) # 蹬墙跳速度
-const WALL_JUMP_GRACE := 0.10 # 离开墙壁后还能蹬的缓冲时间
-const CLIMB_JUMP_STAMINA_COST := 20.0 # 攀爬跳体力消耗
+const WALL_JUMP_FORCE: Vector2 = Vector2(120.0, 105.0) # 蹬墙跳速度
+const WALL_JUMP_GRACE: float = 0.10 # 离开墙壁后还能蹬的缓冲时间
+const CLIMB_JUMP_STAMINA_COST: float = 20.0 # 攀爬跳体力消耗
 ## Dash
-const DASH_SPEED := 240.0 # 冲刺速度
-const DASH_TIME := 0.15 # 冲刺持续时间
-const DASH_COOLDOWN := 0.2 # 冲刺结束后冷却时间
-const MAX_DASHES := 1 # 默认 1 次 Dash（后期可升级到 2 次）
+const DASH_SPEED: float = 240.0 # 冲刺速度
+const DASH_TIME: float = 0.15 # 冲刺持续时间
+const DASH_COOLDOWN: float = 0.2 # 冲刺结束后冷却时间
+const MAX_DASHES: int = 1 # 默认 1 次 Dash（后期可升级到 2 次）
 ## 高级冲刺技巧相关
-const SUPER_BOOST := 1.3 # Super dash的跳跃加成
-const HYPER_BOOST_X := 1.5 # Hyper dash的水平速度加成
-const HYPER_BOOST_Y := 0.8 # Hyper dash的垂直速度减少
-const ULTRA_BOOST := 1.2 # Ultra dash的速度保持加成
-const ULTRA_MIN_HEIGHT := 28.0 # Ultra所需的最低高度差（像素）
-const SUPER_TIME_WINDOW := 0.1 # Super Dash 触发时间窗口（秒）
+const SUPER_BOOST: float = 1.3 # Super dash的跳跃加成
+const HYPER_BOOST_X: float = 1.5 # Hyper dash的水平速度加成
+const HYPER_BOOST_Y: float = 0.8 # Hyper dash的垂直速度减少
+const ULTRA_BOOST: float = 1.2 # Ultra dash的速度保持加成
+const ULTRA_MIN_HEIGHT: float = 28.0 # Ultra所需的最低高度差（像素）
+const SUPER_TIME_WINDOW: float = 0.1 # Super Dash 触发时间窗口（秒）
 
 ## 变量
 # var velocity: Vector2 # CharacterBody2D的隐藏变量
-var holding := false # 是否正在抱物体
-var move_input := Input.get_action_strength("right") - Input.get_action_strength("left") # 读取左右输入（1：右，-1：左）
-var on_ground := is_on_floor() # 当前是否在地面
-var can_apply_gravity := true # 是否可以应用重力
-var can_move := true # 是否可以应用移动
+var holding: bool = false # 是否正在抱物体
+var move_input: float = Input.get_action_strength("right") - Input.get_action_strength("left") # 读取左右输入（1：右，-1：左）
+var on_ground: bool = is_on_floor() # 当前是否在地面
+var can_apply_gravity: bool = true # 是否可以应用重力
+var can_move: bool = true # 是否可以应用移动
 # 跳跃相关
-var can_jump := true
-var var_jump_timer := 0.0 # 可变跳定时器
-var coyote_timer := 0.0 # Coyote Time
-var buffer_timer := 0.0 # 提前按跳缓冲
+var can_jump: bool = true
+var var_jump_timer: float = 0.0 # 可变跳定时器
+var coyote_timer: float = 0.0 # Coyote Time
+var buffer_timer: float = 0.0 # 提前按跳缓冲
 # 攀爬相关
-var stamina := CLIMB_MAX_STAMINA # 当前体力
-var is_walling := false # 是否正在墙上
-var on_wall := false # 是否在贴墙
-var wall_dir := 0 # 贴哪一边的墙：-1：左墙，1：右墙
-var is_complete_climb := false # 是否完成攀爬
-var wall_grace_timer := 0.0 # 离墙缓冲计时
+var stamina: float = CLIMB_MAX_STAMINA # 当前体力
+var is_walling: bool = false # 是否正在墙上
+var on_wall: bool = false # 是否在贴墙
+var wall_dir: int = 0 # 贴哪一边的墙：-1：左墙，1：右墙
+var is_complete_climb: bool = false # 是否完成攀爬
+var wall_grace_timer: float = 0.0 # 离墙缓冲计时
 # Dash
-var dash_dir := Vector2.ZERO # 当前冲刺方向
-var dashes_left := MAX_DASHES # 剩余 Dash 数
-var is_dashing := false # 是否正在冲刺
-var dash_timer := 0.0 # 冲刺计时
-var dash_cooldown := 0.0 # 冲刺冷却计时
+var dash_dir: Vector2 = Vector2.ZERO # 当前冲刺方向
+var dashes_left: int = MAX_DASHES # 剩余 Dash 数
+var is_dashing: bool = false # 是否正在冲刺
+var dash_timer: float = 0.0 # 冲刺计时
+var dash_cooldown: float = 0.0 # 冲刺冷却计时
 # 高级冲刺技巧
-var is_super_dashing := false # 是否正在执行 Super dash
-var is_hyper_dashing := false # 是否正在执行 Hyper dash
-var is_ultra_dashing := false # 是否正在执行 Ultra dash
-var hyper_charge_time := 0.0 # Hyper 充能计时器
-var ultra_start_velocity := Vector2.ZERO # Ultra 开始时的速度
-var super_dash_timer := 0.0 # Super Dash 触发计时器
+var is_super_dashing: bool = false # 是否正在执行 Super dash
+var is_hyper_dashing: bool = false # 是否正在执行 Hyper dash
+var is_ultra_dashing: bool = false # 是否正在执行 Ultra dash
+var hyper_charge_time: float = 0.0 # Hyper 充能计时器
+var ultra_start_velocity: Vector2 = Vector2.ZERO # Ultra 开始时的速度
+var super_dash_timer: float = 0.0 # Super Dash 触发计时器
 
 func _physics_process(delta: float) -> void:
     ## 更新变量
@@ -141,13 +141,13 @@ func _physics_process(delta: float) -> void:
     # 应用物理移动
     move_and_slide()
     
-    # 调试信息
-    if Input.is_action_just_pressed("dash"):
-        print("Dash输入: 方向=", dash_dir, " 在地面=", on_ground)
-    if Input.is_action_just_pressed("jump") and is_dashing:
-        print("Jump during Dash: Super timer=", super_dash_timer)
-    if Input.is_action_just_pressed("jump"):
-        print("Jump pressed: is_jumping=", is_jumping(), " buffer_timer=", buffer_timer)
+    # # 调试信息
+    # if Input.is_action_just_pressed("dash"):
+    #     print("Dash输入: 方向=", dash_dir, " 在地面=", on_ground)
+    # if Input.is_action_just_pressed("jump") and is_dashing:
+    #     print("Jump during Dash: Super timer=", super_dash_timer)
+    # if Input.is_action_just_pressed("jump"):
+    #     print("Jump pressed: is_jumping=", is_jumping(), " buffer_timer=", buffer_timer)
 
 
 # 方向反转函数
@@ -401,14 +401,14 @@ func try_start_ultra_dash() -> void:
     var result = space_state.intersect_ray(query)
     
     # 打印调试信息
-    print("Ultra Dash检测: 从 ", ray_start, " 到 ", ray_start + Vector2(0, ULTRA_MIN_HEIGHT))
-    print("碰撞结果: ", result)
+    # print("Ultra Dash检测: 从 ", ray_start, " 到 ", ray_start + Vector2(0, ULTRA_MIN_HEIGHT))
+    # print("碰撞结果: ", result)
     
     # 如果没有碰撞到任何东西，说明高度足够
     if not result:
         start_ultra_dash()
-    else:
-        print("Ultra Dash条件不满足: 碰撞到 ", result.collider.name)
+    # else:
+    #     print("Ultra Dash条件不满足: 碰撞到 ", result.collider.name)
 
 ## 开始Ultra Dash函数
 func start_ultra_dash() -> void:
