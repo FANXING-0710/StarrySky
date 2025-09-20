@@ -2,8 +2,7 @@ extends State
 
 func Begin() -> void:
     print("进入 Run 状态")
-    # _owner.stop()   # 调用 Player.gd 的函数
-
+    
 func Update(delta: float) -> void:
     # 进入 idle
     if _owner.velocity.x == 0 and _owner.move_input == 0:

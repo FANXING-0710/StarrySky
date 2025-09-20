@@ -13,7 +13,7 @@ func Update(delta: float) -> void:
         change_state("Run")
         
     # 进入 crouch
-    if Input.is_action_pressed("down"):
+    if Input.is_action_pressed("down") and _owner.velocity == Vector2.ZERO:
         change_state("Crouch")
         
     # 进入 jump
@@ -26,6 +26,8 @@ func Update(delta: float) -> void:
     
     # 播放动画
     _owner.animation.play("idle")
+
+    #TODO: https://chatgpt.com/c/68cd5aa8-f6f0-832a-a6b9-4e47fc07795f
         
 func End() -> void:
     print("退出 Idle")

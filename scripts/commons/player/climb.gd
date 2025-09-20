@@ -37,7 +37,7 @@ func Update(delta: float) -> void:
         change_state("Slip")
     elif _owner.wall_dir == 1 and Input.is_action_pressed("right") and Input.is_action_just_released("grab"):
         change_state("Slip")
-    elif Input.is_action_just_pressed("grab"):
+    elif not Input.is_action_pressed("grab"):
         change_state("Fall")
     elif _owner.on_wall == false:
         change_state("Fall")
