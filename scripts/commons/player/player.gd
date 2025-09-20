@@ -146,6 +146,8 @@ func _physics_process(delta: float) -> void:
         print("Dash输入: 方向=", dash_dir, " 在地面=", on_ground)
     if Input.is_action_just_pressed("jump") and is_dashing:
         print("Jump during Dash: Super timer=", super_dash_timer)
+    if Input.is_action_just_pressed("jump"):
+        print("Jump pressed: is_jumping=", is_jumping(), " buffer_timer=", buffer_timer)
 
 
 # 方向反转函数
@@ -191,18 +193,21 @@ func apply_horizontal_move(delta: float) -> void:
         # 无输入 → 速度衰减
         velocity.x = move_toward(velocity.x, 0, RUN_REDUCE * delta)
 
+# 检查是否处于跳跃状态
+func is_jumping() -> bool:
+    return velocity.y < 0 or var_jump_timer > 0
+
 # 跳跃输入处理函数
 func handle_jump_input(delta: float) -> void:
-    #DEBUG：快速双击跳跃会先正常跳跃后在跳跃一次
-    # 检测按下跳跃键 → 启动缓冲
-    if Input.is_action_just_pressed("jump"):
+    # 检测按下跳跃键 → 启动缓冲（只有在不处于跳跃状态时）
+    if Input.is_action_just_pressed("jump") and not is_jumping():
         buffer_timer = JUMP_BUFFER_TIME
 
     # 缓冲计时递减
     buffer_timer = max(buffer_timer - delta, 0.0)
 
-    # 起跳条件：有缓冲 + 有宽容时间
-    if buffer_timer > 0.0 and (coyote_timer > 0.0 or on_ground):
+    # 起跳条件：有缓冲 + 有宽容时间 + 不处于跳跃状态
+    if buffer_timer > 0.0 and (coyote_timer > 0.0 or on_ground) and not is_jumping():
         # 应用跳跃速度
         velocity.y = - JUMP_SPEED
         # 设置可变跳跃时间
@@ -222,7 +227,7 @@ func handle_jump_input(delta: float) -> void:
         var_jump_timer -= delta
     elif velocity.y < 0 and not Input.is_action_pressed("jump"):
         # 如果松开跳跃键且仍在上升，减少上升速度
-        velocity.y = max(velocity.y, -JUMP_SPEED * 0.5) # 或者 velocity.y = max(velocity.y, -JUMP_SPEED * 0.5)
+        velocity.y = max(velocity.y, -JUMP_SPEED * 0.5)
         # 结束可变跳跃
         var_jump_timer = 0.0
 
