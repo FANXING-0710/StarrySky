@@ -13,8 +13,8 @@ func Update(delta: float) -> void:
         change_state("Run")
         
     # 进入 crouch
-    if Input.is_action_pressed("down") and _owner.velocity == Vector2.ZERO:
-        change_state("Crouch")
+    # if Input.is_action_pressed("down") and _owner.velocity == Vector2.ZERO:
+    #     change_state("Crouch")
         
     # 进入 jump
     if _owner.velocity.y < 0:

@@ -43,8 +43,8 @@ const DASH_COOLDOWN: float = 0.2 # 冲刺结束后冷却时间
 const MAX_DASHES: int = 1 # 默认 1 次 Dash（后期可升级到 2 次）
 ## 高级冲刺技巧相关
 const SUPER_BOOST: float = 1.3 # Super dash的跳跃加成
-const HYPER_BOOST_X: float = 1.5 # Hyper dash的水平速度加成
-const HYPER_BOOST_Y: float = 0.8 # Hyper dash的垂直速度减少
+const HYPER_BOOST_X: float = 1.8 # Hyper dash的水平速度加成
+const HYPER_BOOST_Y: float = 0.7 # Hyper dash的垂直速度减少
 const ULTRA_BOOST: float = 1.2 # Ultra dash的速度保持加成
 const ULTRA_MIN_HEIGHT: float = 28.0 # Ultra所需的最低高度差（像素）
 const SUPER_TIME_WINDOW: float = 0.1 # Super Dash 触发时间窗口（秒）
@@ -322,22 +322,16 @@ func handle_advanced_tech(delta: float) -> void:
         try_start_ultra_dash()
         return # 如果触发了Ultra，就不检查其他技巧
     
+    # 然后检查Hyper Dash（在地面斜下Dash期间按跳跃键）
+    if is_dashing and on_ground and dash_dir.y > 0 and dash_dir.x != 0:
+        if Input.is_action_just_pressed("jump"):
+            start_hyper_dash()
+            return
+    
     # 然后检查Super Dash（添加时间窗口限制）
     if is_dashing and on_ground and dash_dir.y == 0 and Input.is_action_just_pressed("jump") and super_dash_timer > 0:
         start_super_dash()
         return # 如果触发了Super，就不检查其他技巧
-    
-    # 最后检查Hyper Dash
-    if is_dashing and on_ground and dash_dir.y > 0 and dash_dir.x != 0:
-        # 开始计算充能时间
-        hyper_charge_time += delta
-    elif hyper_charge_time > 0:
-        # 不在充能状态，重置计时器
-        hyper_charge_time = 0
-    
-    # 在Dash结束后检查是否触发Hyper
-    if not is_dashing and hyper_charge_time > 0 and Input.is_action_just_pressed("jump"):
-        start_hyper_dash()
     
     # Ultra Dash速度保持
     if is_ultra_dashing and on_ground:
@@ -368,15 +362,15 @@ func start_super_dash() -> void:
 func start_hyper_dash() -> void:
     # 设置Hyper Dash状态
     is_hyper_dashing = true
+    
     # 结束普通Dash
     end_dash()
     
     # 应用Hyper Dash效果: 更快更远但高度较低
-    velocity.y = - JUMP_SPEED * HYPER_BOOST_Y
-    velocity.x = dash_dir.x * DASH_SPEED * HYPER_BOOST_X * sign(grapsics.scale.x)
+    # 使用dash_dir.x而不是grapsics.scale.x，因为dash_dir已经包含了输入方向
+    velocity.y = -JUMP_SPEED * HYPER_BOOST_Y
+    velocity.x = dash_dir.x * DASH_SPEED * HYPER_BOOST_X
     
-    # 重置充能计时器
-    hyper_charge_time = 0
     # 重置Hyper Dash状态
     is_hyper_dashing = false
 
