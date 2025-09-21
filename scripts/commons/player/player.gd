@@ -41,6 +41,7 @@ const DASH_SPEED: float = 240.0 # 冲刺速度
 const DASH_TIME: float = 0.15 # 冲刺持续时间
 const DASH_COOLDOWN: float = 0.2 # 冲刺结束后冷却时间
 const MAX_DASHES: int = 1 # 默认 1 次 Dash（后期可升级到 2 次）
+const DASH_LAND_JUMP_WINDOW: float = 0.1 # Dash落地后的跳跃时间窗口
 ## 高级冲刺技巧相关
 const SUPER_BOOST: float = 1.3 # Super dash的跳跃加成
 const HYPER_BOOST_X: float = 1.8 # Hyper dash的水平速度加成
@@ -74,6 +75,8 @@ var dashes_left: int = MAX_DASHES # 剩余 Dash 数
 var is_dashing: bool = false # 是否正在冲刺
 var dash_timer: float = 0.0 # 冲刺计时
 var dash_cooldown: float = 0.0 # 冲刺冷却计时
+var was_dashing: bool = false # 上一帧是否在冲刺
+var dash_land_timer: float = 0.0 # Dash落地后的特殊跳跃时间窗口
 # 高级冲刺技巧
 var is_super_dashing: bool = false # 是否正在执行 Super dash
 var is_hyper_dashing: bool = false # 是否正在执行 Hyper dash
@@ -90,6 +93,15 @@ func _physics_process(delta: float) -> void:
     on_ground = is_on_floor()
     # 更新离墙缓冲计时器
     wall_grace_timer = max(wall_grace_timer - delta, 0.0)
+
+    # 检测Dash落地
+    if was_dashing and on_ground and not is_dashing:
+        dash_land_timer = DASH_LAND_JUMP_WINDOW
+    else:
+        dash_land_timer = max(dash_land_timer - delta, 0.0)
+    
+    # 记录上一帧的Dash状态
+    was_dashing = is_dashing
 
     # 处理高级冲刺技巧
     handle_advanced_tech(delta)
@@ -197,7 +209,7 @@ func apply_horizontal_move(delta: float) -> void:
 func is_jumping() -> bool:
     return velocity.y < 0 or var_jump_timer > 0
 
-# 跳跃输入处理函数
+# 跳跃输入处理函数 - 修改版
 func handle_jump_input(delta: float) -> void:
     # 检测按下跳跃键 → 启动缓冲（只有在不处于跳跃状态时）
     if Input.is_action_just_pressed("jump") and not is_jumping():
@@ -207,9 +219,26 @@ func handle_jump_input(delta: float) -> void:
     buffer_timer = max(buffer_timer - delta, 0.0)
 
     # 起跳条件：有缓冲 + 有宽容时间 + 不处于跳跃状态
-    if buffer_timer > 0.0 and (coyote_timer > 0.0 or on_ground) and not is_jumping():
-        # 应用跳跃速度
-        velocity.y = - JUMP_SPEED
+    if buffer_timer > 0.0 and (coyote_timer > 0.0 or on_ground or dash_land_timer > 0.0) and not is_jumping():
+        # 应用跳跃速度 - 保留水平动量
+        var jump_power = JUMP_SPEED
+        
+        # 如果是Dash落地跳跃，给予额外加成
+        if dash_land_timer > 0.0:
+            # 继承Dash的水平动量并给予加成
+            var horizontal_boost = 1.5  # 水平动量加成系数
+            velocity.x *= horizontal_boost
+            
+            # 稍微增加跳跃高度
+            jump_power *= 1.1
+            
+            # 重置Dash落地计时器
+            dash_land_timer = 0.0
+            
+            # 可以在这里添加视觉/音频反馈
+            # print("Dash落地跳跃!")
+        
+        velocity.y = -jump_power
         # 设置可变跳跃时间
         var_jump_timer = VAR_JUMP_TIME
         # 消耗掉缓冲
@@ -298,7 +327,7 @@ func start_dash() -> void:
     # 设置冲刺速度
     velocity = dash_dir * DASH_SPEED
 
-# 停止Dash函数
+# 停止Dash函数 - 修改版
 func end_dash() -> void:
     # 启用跳跃
     can_jump = true
@@ -308,8 +337,10 @@ func end_dash() -> void:
     dash_timer = 0.0
     # 设置冲刺冷却
     dash_cooldown = DASH_COOLDOWN
-    # dash 结束后，水平速度会保留一部分（模拟 Celeste 手感）
-    velocity *= 0.6
+    # dash 结束后，速度会保留一部分（模拟 Celeste 手感）
+    # 但垂直速度保留较少，水平速度保留较多
+    velocity.x *= 0.8  # 增加水平速度保留
+    velocity.y *= 0.4  # 减少垂直速度保留
 
 ## 高级冲刺技巧处理函数
 func handle_advanced_tech(delta: float) -> void:
